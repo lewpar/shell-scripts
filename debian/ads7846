@@ -1,0 +1,11 @@
+#!/bin/bash
+
+DISPLAY_NAME="HDMI-A-1"
+RESOLUTION="800x480"
+REFRESH_RATE="60"
+VIDEO_COMMAND="video=$DISPLAY_NAME:$RESOLUTION@$REFRESH_RATE"
+
+# Check and set the video display resolution and refresh rate.
+if ! grep -q $VIDEO_COMMAND; then
+    echo " $VIDEO_COMMAND" >> /boot/firmware/cmdline.txt
+fi

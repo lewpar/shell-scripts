@@ -5,7 +5,32 @@ RESOLUTION="800x480"
 REFRESH_RATE="60"
 VIDEO_COMMAND="video=$DISPLAY_NAME:$RESOLUTION@$REFRESH_RATE"
 
-# Check and set the video display resolution and refresh rate.
-if ! grep -q $VIDEO_COMMAND; then
-    echo " $VIDEO_COMMAND" >> /boot/firmware/cmdline.txt
+FILE_BOOT_CMDLINE="/boot/firmware/cmdline.txt"
+FILE_BOOT_CONFIG="/boot/firmware/config.txt"
+
+# Check and set the video display resolution and refresh rate
+if ! grep -q $VIDEO_COMMAND $FILE_BOOT_CMDLINE; then
+    echo " $VIDEO_COMMAND" >> $FILE_BOOT_CMDLINE
+fi
+
+
+# Check and enable the ads7846 device tree overlay
+if ! grep -q "dtoverlay=ads7846"; then
+    # Enable KMS device tree overlay
+    sudo sed -i -e 's/#dtoverlay=vc4-kms-v3d/dtoverlay=vc4-kms-v3d/' $FILE_BOOT_CONFIG
+
+    # Configure and enable the device tree overlays required for running the screen (i2c, spi, uart)
+    sudo echo "hdmi_force_hotplug=1" >> $FILE_BOOT_CONFIG
+    sudo echo "dtparam=i2c_arm=on" >> $FILE_BOOT_CONFIG
+    sudo echo "dtparam=spi=on" >> $FILE_BOOT_CONFIG
+    sudo echo "enable_uart=1" >> $FILE_BOOT_CONFIG
+    sudo echo "display_rotate=0" >> $FILE_BOOT_CONFIG
+    sudo echo "max_usb_current=1" >> $FILE_BOOT_CONFIG
+    sudo echo "config_hdmi_boost=7" >> $FILE_BOOT_CONFIG
+    sudo echo "hdmi_group=2" >> $FILE_BOOT_CONFIG
+    sudo echo "hdmi_mode=1" >> $FILE_BOOT_CONFIG
+    sudo echo "hdmi_mode=87" >> $FILE_BOOT_CONFIG
+    sudo echo "hdmi_drive=1" >> $FILE_BOOT_CONFIG
+    sudo echo "hdmi_cvt 800 480 60 6 0 0 0" >> $FILE_BOOT_CONFIG
+    sudo echo "dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900" >> $FILE_BOOT_CONFIG
 fi
